@@ -119,7 +119,7 @@ const mesaiTypes={
     setFormData((prevState) => ({ ...prevState, fiili: sum }));
   };
   const fetchPeriod = async () => {
-    const result = await fetch("http://localhost:7777/api/period")
+    const result = await fetch("https://puantaj-takip.vercel.app/api/period")
       .then((res) => res.json())
       .then((data) => setPeriod(data.result[0]));
     const month = period.month;
@@ -149,7 +149,7 @@ const mesaiTypes={
       esasOdeme: formData.esasOdeme,
     };
 
-    const result = await fetch("http://localhost:7777/api/workings", {
+    const result = await fetch("https://puantaj-takip.vercel.app/api/workings", {
       headers: new Headers({
         "content-type": "application/json",
       }),
