@@ -76,6 +76,7 @@ const adminSchema = mongoose.Schema({
   email: String,
   password: String,
   active: Boolean,
+  ustBirim:String
 });
 const adminModel = mongoose.model("admin", adminSchema);
 const createAdmin = async (admin) => {
@@ -112,6 +113,7 @@ const fetchLocationAdmins = async () => {
 
 const fetchAdminById=async(id)=>{
   const admin = await adminModel.findOne({_id:id}).select({username:0,password:0,active:0})
+                .populate("location")
   return admin;
 }
 //#endregion
