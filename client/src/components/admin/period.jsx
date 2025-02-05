@@ -19,7 +19,7 @@ const Period = () => {
     selectedUser: "",
   });
   useEffect(() => {
-    //  fetchPeriod();
+    fetchPeriod();
     fetchLocationUsers();
   }, []);
   const fetchLocationUsers = async () => {
@@ -27,6 +27,11 @@ const Period = () => {
       (res) => res.json()
     );
     setUserList(users.result);
+  };
+  const fetchPeriod = async () => {
+    const result = await fetch(`${process.env.REACT_APP_ALL_PERIOD}`).then(
+      (res) => res.json().then((data) => setPeriod(data.result))
+    );
   };
   const handleFormData = (e) => {
     const { value, name } = e.target;
