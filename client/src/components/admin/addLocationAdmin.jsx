@@ -10,6 +10,7 @@ const AddLocationAdmin = () => {
     branch: "",
     email: "",
     password: "",
+    ustBirim:"",
     active: true,
   });
   const [lcoations, setLocations] = useState([]);
@@ -137,6 +138,15 @@ const AddLocationAdmin = () => {
               <input
                 name="branch"
                 value={formData.branch}
+                onChange={handleFormData}
+              />
+            </div>
+            <div className="input-field">
+              <label>Üst Birim/bağlı başkanlık</label>
+              <input
+                name="ustBirim"
+                type="text"
+                value={formData.ustBirim}
                 onChange={handleFormData}
               />
             </div>
