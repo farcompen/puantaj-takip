@@ -376,9 +376,9 @@ console.log(e);
 <td>{work && work.activeWorkingTime}</td>
                 <td>{work && work.fiili}</td>
                 <td>{work && work.fiili-work.activeWorkingTime}</td>
-                <td>{work&& work.fiili-work.activeWorkingTime}</td>
+                <td>{work&& work.geceCalisma}</td>
                 <td>{work && work.bayram}</td>
-                <td>{work && work.esasOdeme}</td>
+                <td>{work && work.fiili-work.activeWorkingTime}</td>
                 <td>
                     
                     <div className="button-grid" >
