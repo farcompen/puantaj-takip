@@ -32,7 +32,7 @@ const handleSubmit = async()=>{
     }
     else {
         const currentMont = formData.month;
-        formData.month= currentMont-1;
+       
        const result = await fetch(process.env.REACT_APP_PERIOD,{
         method:'POST',
         headers:new Headers({

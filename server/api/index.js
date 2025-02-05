@@ -109,6 +109,11 @@ const fetchLocationAdmins = async () => {
     throw new Error("Liste getirilemedi");
   }
 };
+
+const fetchAdminById=async(id)=>{
+  const admin = await adminModel.findOne({_id:id}).select({username:0,password:0,active:0})
+  return admin;
+}
 //#endregion
 //#region User model and functions
 const userSchemea = mongoose.Schema({
@@ -828,6 +833,23 @@ app.get("/api/admin/tesisAdmin", async (req, res) => {
     });
   }
 });
+//fetch tesis admin by id 
+app.get("/api/admin/:id",async(req,res)=>{
+  try{
+    const adminId = req.params.id;
+    const result = await fetchAdminById(adminId);
+    res.status(200).send({
+      status:"success",
+      user:result
+    })
+  }catch(err){
+    res.status(400).send({
+      status:"error",
+      user:{},
+      message:err.message
+    })
+  }
+})
 app.post("/api/login", async (req, res) => {
   try {
     const { username, password } = req.body;
