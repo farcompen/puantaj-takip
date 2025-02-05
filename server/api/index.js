@@ -185,6 +185,8 @@ const periodSchema = mongoose.Schema({
   name: String,
   activeWorkingDaysInMonth: Number,
   active: Boolean,
+  activeHours:Number,
+  selectedUser:String
 });
 const periodModel = mongoose.model("period", periodSchema);
 
