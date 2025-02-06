@@ -179,15 +179,25 @@ const fetchAllLocation = async()=>{
 //#endregion
 
 //#region periods model and functions
+const userDetail={
+  name:String,
+  surname:String,
+  id:String,
+  branch:String,
+  activeWorkingDaysInMonth: Number,
+  activeHours:Number,
+
+}
 const periodSchema = mongoose.Schema({
   year: Number,
   month: Number,
   name: String,
-  activeWorkingDaysInMonth: Number,
   active: Boolean,
-  activeHours:Number,
-  selectedUser:String
+  detail:[userDetail],
+
 });
+
+
 const periodModel = mongoose.model("period", periodSchema);
 
 const createPeriod = async (period) => {
@@ -203,7 +213,13 @@ const fetchPeriod = async () => {
 };
 const fetchAllPeriod = async () => {
   return await periodModel.find();
+
+          
 };
+
+const fetchPeriodOfAdmin = async(id)=>{
+  return await periodModel.find({admin:id}).sort({ _id: -1 }).limit(1);
+}
 //#endregion
 
 //#region workings model and functions
@@ -259,7 +275,7 @@ const createWorkings = async (workings) => {
   workings.fiili = sabah + aksam;
   workings.activeWorkingTime = await calculateActiveWorkingTime(
     workings.period,
-    workings.user,
+    workings.admin.id,
     workings.dayHour
   );
   workings.sabah = sabah;
@@ -351,9 +367,15 @@ const calculateDays = async (dayss) => {
 };
 
 const calculateActiveWorkingTime = async (periodId, userId, dayHour) => {
-  const user = await userModel.findById(userId).exec();
+  //const user = await userModel.findById(userId).exec();
   const period = await periodModel.findById(periodId).exec();
-  let workingTime = user.workingHourInDay * period.activeWorkingDaysInMonth;
+  //let workingTime = user.workingHourInDay * period.activeWorkingDaysInMonth;
+  console.log("period is",period)
+  const branchInfo = period.detail.find(item=>item.id==userId);
+  console.log(branchInfo)
+  let  workingTime = branchInfo.activeWorkingDaysInMonth*branchInfo.activeHours;
+
+console.log(workingTime);
   const validValues = ["r", "i", "i.i", "s"];
   let vacationDaysCount = 0;
   for (const work of dayHour) {
@@ -361,9 +383,9 @@ const calculateActiveWorkingTime = async (periodId, userId, dayHour) => {
       vacationDaysCount++;
     }
   }
-  console.log(user);
-  console.log(user.workingHourInDay);
-  workingTime -= vacationDaysCount * user.workingHourInDay;
+  
+
+  workingTime -= vacationDaysCount * branchInfo.activeHours;
   return workingTime;
 };
 
@@ -582,6 +604,7 @@ app.get("/api/allPeriod", async (req, res) => {
 app.post("/api/workings", async (req, res) => {
   try {
     const workingBody = req.body;
+    console.log(req.body)
 
     const result = await createWorkings(workingBody);
     if (result) {
