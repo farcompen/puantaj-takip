@@ -18,6 +18,7 @@ const CreateWorkerDetail = () => {
     "calendar-grid hidden"
   );
   const [period, setPeriod] = useState({});
+  const [branchWorkingHours,setBranchWorkingHours]=useState(0);
   const [inputSummaryClassName, setSummaryClassName] =
     useState("input-grid hidden");
   const months = [
@@ -45,6 +46,7 @@ const CreateWorkerDetail = () => {
     esasOdeme: "",
     createdUserId: "",
     monthlyWorkingDays: "",
+    
   });
 const mesaiTypes={
   "normal":1,
@@ -119,14 +121,22 @@ const mesaiTypes={
     setFormData((prevState) => ({ ...prevState, fiili: sum }));
   };
   const fetchPeriod = async () => {
-    const result = await fetch("https://puantaj-takip.vercel.app/api/period")
+    
+    const result = await fetch(process.env.REACT_APP_PERIOD)
       .then((res) => res.json())
-      .then((data) => setPeriod(data.result[0]));
+    setPeriod(result.result[0])
     const month = period.month;
     const year = period.year;
     const daysInMonth = new Date(year, month, 0).getDate();
     setFormData((prevState) => ({ ...prevState, period: period._id }));
-    setMonthlyWorkingDays(period.activeWorkingDaysInMonth);
+   // setMonthlyWorkingDays(period.activeWorkingDaysInMonth);
+  const {id}=decodeJwt(localStorage.getItem("accessToken"));
+  const branchPuantajInfo = result.result[0].detail;
+  const secilen = branchPuantajInfo.find(item => item.id === id);
+  console.log(secilen)
+  setMonthlyWorkingDays(secilen.activeWorkingDaysInMonth)
+  setBranchWorkingHours(secilen.activeHours);
+     
   };
   const handleSubmit = async () => {
     initDayHourList();
@@ -147,9 +157,10 @@ const mesaiTypes={
       geceCalisma: formData.geceCalisma,
       bayram: formData.bayram,
       esasOdeme: formData.esasOdeme,
+      admin:decodeJwt(localStorage.getItem("accessToken"))
     };
 
-    const result = await fetch("https://puantaj-takip.vercel.app/api/workings", {
+    const result = await fetch(process.env.REACT_APP_WORKINGS_API_URL, {
       headers: new Headers({
         "content-type": "application/json",
       }),
@@ -173,8 +184,10 @@ const mesaiTypes={
   };
 
   const initActiveWorkingTime = () => {
+    
+    console.log(monthlyWorkingDays,branchWorkingHours,activeWorkingTime)
     setActiveWorkingTime(
-      (prevValue) => monthlyWorkingDays * selectedUser.workingHourInDay
+       monthlyWorkingDays * branchWorkingHours
     );
     console.log("aktive working time calısıtı");
   };
@@ -278,7 +291,7 @@ const mesaiTypes={
           <input
             type="text"
             placeholder=""
-            value={monthlyWorkingDays * selectedUser.workingHourInDay}
+            value={monthlyWorkingDays * branchWorkingHours}
           />
         </div>
         <div className="input-field">

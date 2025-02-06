@@ -452,6 +452,14 @@ box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         
          
 }
+.card-header .btn-right {
+background-color: transparent;
+color: black;
+margin-right: 1%;
+font-size: x-small
+
+
+}
 .input-grid label{
   font-size: x-small;
   font-weight: bold;

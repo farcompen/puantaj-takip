@@ -10,7 +10,7 @@ const Personel=()=>{
         location: selectedLocation,
         branch: "",
        adminId:"",
-       workingHourInDay:9,
+       workingHourInDay:0,
        active: true,
       });
       const [lcoations, setLocations] = useState([]);
@@ -147,6 +147,7 @@ const Personel=()=>{
                 <div className="input-field">
                   <label>Günlük Çalışma Saati</label>
                   <input
+                  disabled
                     name="workingHourInDay"
                     value={formData.workingHourInDay}
                     onChange={handleFormData}

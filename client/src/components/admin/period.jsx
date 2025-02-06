@@ -1,5 +1,7 @@
+
+
 import { useEffect, useState } from "react";
-import { FaHome, FaListAlt } from "react-icons/fa";
+import { FaHome, FaListAlt, FaPlus, FaPlusCircle, FaPlusSquare, FaRegSave, FaSave } from "react-icons/fa";
 const Period = () => {
   const date_ = new Date();
   const [period, setPeriod] = useState([]);
@@ -8,20 +10,29 @@ const Period = () => {
     identityNumber: "",
     name: "",
     surname: "",
+    _id:"",
+    branch:""
   });
+  const [branchPuantajParameters,setbranchPuantajParameters]=useState([])
+
+  const [selectedPuantajOnfo,setselectedPuantajInfo]=useState({
+    activeWorkingDaysInMonth:0,
+    activeHours:0
+
+  })
   const [formData, setformdata] = useState({
     year: date_.getFullYear(),
     month: date_.getMonth(),
     name: "",
-    activeWorkingDaysInMonth: 0,
+    
     active: true,
-    activeHours: 0,
-    selectedUser: "",
+  
+   
   });
   useEffect(() => {
     fetchPeriod();
     fetchLocationUsers();
-  }, []);
+  }, [branchPuantajParameters]);
   const fetchLocationUsers = async () => {
     const users = await fetch(process.env.REACT_APP_LOCATION_USERS).then(
       (res) => res.json()
@@ -38,27 +49,66 @@ const Period = () => {
     setformdata((prev) => ({ ...prev, [name]: value }));
   };
   const handleUser = (e) => {
-    setSelectedUser(e);
+    const user = JSON.parse(e)
+    setSelectedUser(user)
+  
   };
+  const handlePuantajInfo =(e)=>{
+    const {name,value}=e.target;
+    setselectedPuantajInfo((prev)=>({...prev,[name]:value}))
+   
+  
+  }
+  const setPuantajTableValues=()=>{
+    setbranchPuantajParameters((prev)=>([...prev,{
+        name:selectedUser.name,
+        id:selectedUser._id,
+        branch:selectedUser.branch,
+        surname:selectedUser.surname,
+        activeWorkingDaysInMonth:selectedPuantajOnfo.activeWorkingDaysInMonth,
+        activeHours:selectedPuantajOnfo.activeHours
+
+    }]))
+    // branchPuantajParameters.push({
+    //     name:selectedUser.name,
+    //     id:selectedUser._id,
+    //     branch:selectedUser.branch,
+    //     surname:selectedUser.surname,
+    //     activeWorkingDaysInMonth:selectedPuantajOnfo.activeWorkingDaysInMonth,
+    //     activeHours:selectedPuantajOnfo.activeHours
+
+    // })
+  
+
+
+  }
   const handleSubmit = async () => {
+   
     if (
       formData.name == "" ||
       formData.year == "" ||
       formData.month == "" ||
-      formData.activeWorkingDaysInMonth == 0||
-      formData.activeHours == 0 ||
-      selectedUser==""
+      branchPuantajParameters.length==0
+     
     ) {
-      alert("adı,yılı,ayı ve çalışılan gün sayısı boş olamaz");
+      alert("Periyod ad, yıl, ay bilgisi boş olamaz ve putanj listesi 0 olamaz");
     } else {
       const currentMont = formData.month;
-      formData.selectedUser=selectedUser;
+     const period = {
+        year:formData.year,
+        month:formData.month,
+        name:formData.name,
+        detail:branchPuantajParameters,
+        active:true
+
+
+     }
       const result = await fetch(process.env.REACT_APP_PERIOD, {
         method: "POST",
         headers: new Headers({
           "content-type": "application/json",
         }),
-        body: JSON.stringify(formData),
+        body: JSON.stringify(period),
       }).then((res) => res.json());
       if (result.status === "success") {
         alert("DÖNEM açıldı");
@@ -72,6 +122,7 @@ const Period = () => {
   return (
     <>
       <div>
+        
         <div className="card-header">
           <h2
             style={{
@@ -84,6 +135,10 @@ const Period = () => {
           >
             <FaHome /> Dönem Açma
           </h2>
+          <button className="btn btn-right" onClick={handleSubmit}>
+            <FaSave/> Kaydet 
+          </button>
+              
         </div>
         <div className="card">
           <div className="input-grid">
@@ -115,7 +170,22 @@ const Period = () => {
                 onChange={handleFormData}
               />
             </div>
-            <div className="input-field">
+            
+          </div>
+        
+        </div>
+        <div className="card-header" >
+            <h2
+            style={{
+              margin: "10px",
+              fontSize: "x-small",
+              color: "#333",
+              fontWeight: "500",
+              fontWeight: "bold",
+            }}> Birim Çalışma Bilgisi Giriş</h2></div>
+            <div className="card">
+                <div className="input-grid">
+                <div className="input-field">
               <label>Birim seç</label>
               <select
                 id="selectedUser"
@@ -125,7 +195,7 @@ const Period = () => {
                 <option>Seçiniz ..</option>
                 {userList &&
                   userList.map((user, index) => (
-                    <option key={index} value={user._id}>
+                    <option key={index} value={JSON.stringify(user)}>
                       {user.name} {user.surname} / {user.branch}
                     </option>
                   ))}
@@ -136,24 +206,63 @@ const Period = () => {
               <input
                 type="number"
                 name="activeWorkingDaysInMonth"
-                value={formData.activeWorkingDaysInMonth}
-                onChange={handleFormData}
+                value={branchPuantajParameters.activeWorkingDaysInMonth}
+                onChange={handlePuantajInfo}
               />
             </div>
             <div className="input-field">
               <label>Günlük çalışma saati</label>
+             
               <input
                 type="number"
                 name="activeHours"
-                value={formData.activeHours}
-                onChange={handleFormData}
+                value={branchPuantajParameters.activeHours}
+                onChange={handlePuantajInfo}
               />
+              <button className="btn"
+              onClick={setPuantajTableValues}
+              ><FaPlusCircle/> Listeye ekle</button>
+              
             </div>
-          </div>
-          <button className="btn btn-submit btn-end" onClick={handleSubmit}>
-            Kaydet
-          </button>
-        </div>
+          
+            
+                </div>
+                <div>
+               <table className="detail-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>adı soyadı </th>
+                        <th>Birimi</th>
+                        <th>Aydaki aktif çalışma gün sayısı </th>
+                        <th>Günlük çalışma saati</th>
+                    </tr>
+                </thead>
+                <tbody>
+                  {branchPuantajParameters&&branchPuantajParameters.map((data,index)=>
+                (
+                  data.activeHours!=0?(
+                  <tr>
+                        <td>{index}</td>
+                        <td>{data.name} {data.surname}</td>
+                        <td>{data.branch}</td>
+                        <td>{data.activeWorkingDaysInMonth}</td>
+                        <td>{data.activeHours}</td>
+                    </tr>
+                  ):null
+                )
+                )}
+
+                </tbody>
+               
+               </table>
+              
+            </div>
+            
+           
+           
+            </div>
+            
 
         <div className="card-header">
           <h2
@@ -165,7 +274,7 @@ const Period = () => {
               fontWeight: "bold",
             }}
           >
-            <FaHome /> Kurum Listesi
+            Açılan dönemler
           </h2>
         </div>
         <div className="card">
@@ -176,7 +285,8 @@ const Period = () => {
                 <th>Yıl</th>
                 <th>Ay</th>
                 <th>Adı</th>
-                <th>Aktif Çalışma Gün sayısı</th>
+                
+               <th></th>
                 <th>Durumu</th>
                 <th></th>
               </tr>
@@ -189,7 +299,16 @@ const Period = () => {
                     <td>{data.year}</td>
                     <td>{data.month + 1}</td>
                     <td>{data.name}</td>
-                    <td>{data.activeWorkingDaysInMonth}</td>
+                    <td>
+                        {
+                            data.detail.map((dt)=>(
+                                <div style={{ whiteSpace: 'pre-line' }}>
+                                    {`${dt.name} ${dt.surname} / ${dt.branch} / gün:${dt.activeWorkingDaysInMonth} / saat:${dt.activeHours}`}
+                                </div>
+                              
+                        
+                            ))
+                        }</td>
                     <td>
                       {data.active ? (
                         <div

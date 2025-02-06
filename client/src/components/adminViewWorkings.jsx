@@ -141,6 +141,20 @@ const AdminViewWorkings = () => {
 
         {/*Bu tabloya aktif durumdaki admin approve olan tüm işlemler dönem bazlı  gelecek */}
         <div
+            className="card-header"
+          >
+            <h2
+              style={{
+                margin: "10px",
+                fontSize: "x-small",
+                color: "#333",
+                fontWeight: "500",
+                fontWeight: "bold",
+              }}
+            >Kurum Veri Sorumlu Listesi
+            </h2>
+          </div>
+        <div
           className="card"
           style={{
             maxWidth: "83vw",
@@ -152,33 +166,7 @@ const AdminViewWorkings = () => {
             marginBottom: "10px",
           }}
         >
-          <div
-            className="card-header"
-            style={{
-              backgroundImage:
-                " linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%)",
-              borderBottom: "1px solid #eee",
-
-              marginTop: "0px",
-              marginBottom: "5px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              borderRadius: "6px",
-            }}
-          >
-            <h2
-              style={{
-                margin: "10px",
-                fontSize: "x-small",
-                color: "#333",
-                fontWeight: "500",
-                fontWeight: "bold",
-              }}
-            >
-              Kurum Veri Sorumlu Listesi
-            </h2>
-          </div>
+         
 
           <table className="detail-table">
             <thead>
