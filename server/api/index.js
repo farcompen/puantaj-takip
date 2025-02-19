@@ -127,9 +127,10 @@ const userSchemea = mongoose.Schema({
     ref: "location",
   },
   branch: String,
-  workingHourInDay: Number,
+ 
   active: Boolean,
   adminId: String,
+  mahsuplasmaValue:Number
 });
 
 const userModel = mongoose.model("user", userSchemea);
@@ -148,6 +149,24 @@ const fetchUsers = async (adminId) => {
                   .populate("location");
   return users;
 };
+
+const deleteUser=async(id,value)=>{
+  const filter = {_id:id}
+  const result = await userModel.findOneAndUpdate(filter,value)
+}
+
+const updateUserMahsuplasmaValue=async(id,value)=>{
+  const user = await userModel.find({_id:id});
+ 
+  let currentMahsuplasmaDeger = user.mahsuplasmaValue;
+  currentMahsuplasmaDeger=currentMahsuplasmaDeger-value;
+ const filter = {_id:id}
+  const result =await userModel.findOneAndUpdate(filter,{
+                    mahsuplasmaValue:currentMahsuplasmaDeger});
+if(!result){
+  throw new Error("Kullanıcı mahsuplaşma alanı güncellenemedi")
+}
+                  }
 //#endregion
 
 //#region  location model and functions
@@ -209,16 +228,23 @@ const createPeriod = async (period) => {
 };
 
 const fetchPeriod = async () => {
-  return await periodModel.find().sort({ _id: -1 }).limit(1);
+  return await periodModel.find({active:true}).sort({ _id: -1 }).limit(1);
 };
 const fetchAllPeriod = async () => {
-  return await periodModel.find();
+  return await periodModel.find({active:true});
 
           
 };
 
 const fetchPeriodOfAdmin = async(id)=>{
   return await periodModel.find({admin:id}).sort({ _id: -1 }).limit(1);
+}
+
+const updatePeriod = async(id,value)=>{
+  const filter = {_id:id};
+  const result = await periodModel.findOneAndUpdate(filter,value);
+  return result;
+
 }
 //#endregion
 
@@ -255,7 +281,8 @@ const workingSchema = mongoose.Schema({
   sabah: Number,
   aksam: Number,
   status: Number,
-  detail:String
+  detail:String,
+  mahsuplasmaValue:Number
 });
 const workingModel = mongoose.model("working", workingSchema);
 
@@ -283,6 +310,10 @@ const createWorkings = async (workings) => {
   workings.localApprove = false;
   workings.adminApprove = false;
   workings.status = approveStatus.aktif;
+  if(workings.fiili>workings.activeWorkingTime){
+    workings.fazlaMesai=workings.fiili-workings.activeWorkingTime;
+    workings.esasOdeme=workings.fiili-workings.activeWorkingTime
+  }
   workings.detail=workDetail.default;
   if (workings.geceCalisma != aksam) {
     throw new Error(
@@ -295,6 +326,7 @@ const createWorkings = async (workings) => {
   if (!result) {
     throw new Error("Çalışma bilgileri kaydedilemedi");
   }
+   
   return result;
 };
 const receiveWorkingsData = async () => {
@@ -466,7 +498,61 @@ const fetchWorkingByWorkId = async (id) => {
     throw new Error("Çalışma listesi getirilemedi");
   }
 };
+const fetchMahsuplasacakWorkingByUserId=async(adminId,periodId)=>{
+  const result = await workingModel.find({
+    createdUser:adminId,
+    period:periodId,
+    active:true,
+    localApprove:true,
+    
+  }).where("fazlaMesai").gte(1).lte(720)
+  .populate("user").exec();
+  if(!result){
+    throw new Error("Mahsuplaşma db error")
+  }
+  console.log(result);
+const mahsuplasmaList= result.filter((work)=>work.user.mahsuplasmaValue>0)
+console.log(mahsuplasmaList)
+if(!mahsuplasmaList){
+  return []
+}
+return mahsuplasmaList;
+}
 
+
+const mahsuplas = async(workingId,demandedMahsuplasmaValue)=>{
+  
+  const working = await workingModel.findOne({_id:workingId}).populate("user").exec();
+
+  const registeredMahsupValue = await working.user.mahsuplasmaValue;
+
+  if(demandedMahsuplasmaValue>registeredMahsupValue){
+    throw new Error(`Girilen mahsuplaşma değeri veritabanındaki kayıtlı değerden büyük olamaz. Personel Kayıtlı mahsuplaşma Değer: ${registeredMahsupValue}`)
+  }
+  else if(demandedMahsuplasmaValue>working.fazlaMesai){
+    throw new Error("Girilen mahsuplaşma değeri fazla mesai değerinden büyük ")
+  }
+  const fazlaMesaiNewValue = working.fazlaMesai-demandedMahsuplasmaValue;
+  const lastMahsuplasanTotal= working.mahsuplasmaValue;
+  const user = await userModel.findOne({_id:working.user._id});
+  const usersCurrentMahsuplasmaValue = user.mahsuplasmaValue;
+  const updateUserMahsupValue = await userModel.findOneAndUpdate({_id:user.id},{mahsuplasmaValue:usersCurrentMahsuplasmaValue-demandedMahsuplasmaValue})
+ console.log(updateUserMahsupValue)
+  if(updateUserMahsuplasmaValue){
+    console.log("user mahsuplasma alanı update edildi")
+  const workingResult = await workingModel.findOneAndUpdate({_id:workingId},{fazlaMesai:fazlaMesaiNewValue,esasOdeme:fazlaMesaiNewValue,mahsuplasmaValue:Number(lastMahsuplasanTotal)+Number(demandedMahsuplasmaValue)}) 
+return workingResult;
+ }
+ else throw new Error("Kullanıcı mahsuplasma değeri güncellendi ama working bilgisi güncellenirlen hata")
+ 
+
+}
+
+const fetchMahsuplasmaYapilanlar = async(period,admin)=>{
+  return await workingModel.find({createdUser:admin,period:period,active:true})
+                .where("mahsuplasmaValue").gte(1).lte(720)
+                .populate("user").exec();
+}
 //#endregion
 
 //#region  login and jwt
@@ -586,6 +672,23 @@ app.get("/api/period", async (req, res) => {
     });
   }
 });
+
+app.patch("/api/period/:id",async(req,res)=>{
+  try{
+    const updatedValue = req.body;
+    const id = req.params.id;
+    const updateResult = await updatePeriod(id,updatedValue);
+    res.status(201).send({
+    status:"success",
+    result :updateResult})
+
+  }catch(err){
+  res.status(400).send({
+  status:"error",
+  message:err.message
+  }) 
+  }
+})
 app.get("/api/allPeriod", async (req, res) => {
   try {
     const period = await fetchAllPeriod();
@@ -744,6 +847,59 @@ app.post("/api/tesisAdminWorkingList", async (req, res) => {
     });
   }
 });
+
+app.post("/api/getMahsuplasma",async(req,res)=>{
+try{
+  const {userId,periodId}=req.body.postBody;
+  const result = await fetchMahsuplasacakWorkingByUserId(userId,periodId);
+  res.status(200).send({
+    status:"success",
+    mahsuplasmaList:result
+  })
+}catch(err){
+  res.status(400).send({
+    status:"error",
+    mahsuplasmaList:[],
+    message:err.message
+  })
+}
+})
+app.post("/api/mahsuplas",async(req,res)=>{
+  try{
+    const {workingId,mahsuplasmaValue } = req.body.postBody;
+    const result = await mahsuplas(workingId,mahsuplasmaValue);
+    res.status(200).send({
+      status:"success",
+      message:mahsuplasmaValue + "saat mahsuplaşma ybaşarıyla yapıldı"
+
+    })
+
+  }catch(err){
+    res.status(400).send({
+      status:"error",
+      message:err.message
+    })
+  }
+})
+
+app.post("/api/mahsuplasmayapilanlar",async(req,res)=>{
+  try{
+    const {period,admin}=req.body.postBody;
+    const result = await fetchMahsuplasmaYapilanlar(period,admin);
+    res.status(200).send({
+      status:"success",
+      result:result
+
+    })
+  }catch(err){
+    res.status(400).send({
+      status:"error",
+      message:err.message,
+      result:[]
+    })
+  }
+
+})
 app.post("/api/IsmAdminWorkingList", async (req, res) => {
   try {
     const {userId,periodId}=req.body.postBody;
@@ -777,6 +933,25 @@ app.get("/api/user/:id", async (req, res) => {
     });
   }
 });
+
+app.patch("/api/user/:id",async(req,res)=>{
+  try{
+    const id = req.params.id;
+    const value = req.body;
+    const result = await deleteUser(id,value);
+    res.status(200).send({
+      status:"success",
+
+    })
+
+  }catch(err){
+    res.status(400).send({
+      status:"error",
+      message:err.message
+    })
+
+  }
+})
 
 app.post("/api/role", async (req, res) => {
   try {
