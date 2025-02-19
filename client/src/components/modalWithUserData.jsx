@@ -3,12 +3,16 @@ import { useEffect, useState } from "react";
 import  {FaCheckCircle,FaWindowClose} from "react-icons/fa";
 const UserDataModal = ({modalOpen,handleModal,period,user})=>{
     const [isModalOpen,setIsModalOpen]=useState(modalOpen);
+    const [checkClassName,setCheckClassName]=useState("hidden")
   const [working,setWorking]=useState({
     dayHour:[],
     user:""
   
   });
-    useEffect(()=>{
+  const [formdata,setformdata]=useState({
+    mahsuplasilan:0
+  })
+        useEffect(()=>{
        setIsModalOpen(modalOpen)
         fetchWorking();
         console.log("is modal open",modalOpen)
@@ -16,6 +20,13 @@ const UserDataModal = ({modalOpen,handleModal,period,user})=>{
 
    const handleModalState=(state)=>{
     handleModal();
+   }
+
+   const handleFormdata=(e)=>{
+    const {name,value}=e.target;
+    console.log("e is",value)
+    setformdata((prev)=>({...prev,[name]:value}))
+
    }
     const fetchWorking=async()=>{
       const data = {
@@ -36,35 +47,45 @@ const UserDataModal = ({modalOpen,handleModal,period,user})=>{
       console.log("working is",result)
       setWorking(result.working)
     }
+  const checkMahsuplasmaStatus = ()=>{
+    return working.user.mahsuplasmaValue>=formdata.mahsuplasilan && formdata.mahsuplasilan<=working.fazlaMesai
 
+  }
     const handleApprove = async()=>{
-      const updateResult = await fetch(`${process.env.REACT_APP_WORKINGSBYPERIOD_API_URL}/${working._id}`,{
-        method:'PATCH',
-        headers:new Headers({
-        "content-type":"application/json"
-        }),
-        body:JSON.stringify({
-          localApprove:true
+      if(checkMahsuplasmaStatus){
+        const updateResult = await fetch(`${process.env.REACT_APP_WORKINGSBYPERIOD_API_URL}/${working._id}`,{
+          method:'PATCH',
+          headers:new Headers({
+          "content-type":"application/json"
+          }),
+          body:JSON.stringify({
+            localApprove:true
+           // mahsuplasmaValue:Number(mahsuplasilan)
+          })
         })
-      })
-                                   .then(res=>res.json());
-        if(updateResult.status==="success"){
-          handleModalState(false);
-          console.log("değiştirildi")
-          alert("Puantaj kaydedildi");
-          window.location.reload()
-        }                       
-        else {
-          alert("hata",updateResult.message);
-          handleModalState(false);
-        }    
+                                     .then(res=>res.json());
+          if(updateResult.status==="success"){
+            handleModalState(false);
+            console.log("değiştirildi")
+            alert("Puantaj kaydedildi");
+            window.location.reload()
+          }                       
+          else {
+            alert("hata",updateResult.message);
+            handleModalState(false);
+          }    
+      }
+      else {
+        alert("Mahsup edilecek değer personelin toplam mahsuplaşma saatinden büyük olamaz. Mahsup edilecek değer fazla mesai değerinden büyük olamaz")
+      }
+      
 
     }
 return(
     <div className="modal-overlay" style={{ display: isModalOpen ? 'flex' : 'none' }}>
     <div className="modal">
       <div className="modal-header">
-     <h3>Önizleme</h3>
+     {`Önizleme | Personel mahsuplaşma saati: ${working.user.mahsuplasmaValue}`}
         
       </div>
       <div className="modal-content">
@@ -117,11 +138,29 @@ return(
          
           </tbody>
         </table>
-       
+     
+      {/* <div style={{backgroundColor:'gainsboro', fontSize:'x-small', display: 'flex', alignItems:'center', gap: '8px', width:'25%' }}>
+        <label htmlFor="bbb-checkbox">Mahsuplaşma yapılsın</label>
+        <input type="checkbox" id="mahsuplasma-checkbox" onClick={()=>setCheckClassName("")} />
+        <div className={checkClassName}>
+        <label htmlFor="ccc-checkbox">Mahsuplaşacak saati giriniz</label>
+        <input   type="number"   id="mahsuplasilan" name="mahsuplasilan"
+        value={formdata.mahsuplasilan}
+        onChange={handleFormdata}
+        style={{borderTop:'6px',borderBlockColor:'blue',backgroundColor:'darkorange',fontSize:'x-small'}}/>
+        </div>
+        
+      </div> */}
+     
       </div>
+      
+      
       <div className="modal-footer">
         <button className="btn btn-success" onClick={() => handleApprove()}>Onayla <FaCheckCircle/></button>
         <button className="btn btn-red" onClick={() => handleModalState(false)}>Reddet <FaWindowClose/></button>
+      </div>
+      <div>
+        
       </div>
     </div>
     <style jsx>{`

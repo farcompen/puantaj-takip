@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import UserDataModal from "./modalWithUserData";
 import { decodeJwt } from "../utils/jwtDecoder";
 import { FaHome } from "react-icons/fa";
+import { replace } from "react-router-dom";
 
 const CreateWorkerDetail = () => {
   const [calendarDays, setCalendarDays] = useState([]);
@@ -21,7 +22,8 @@ const CreateWorkerDetail = () => {
   const [branchWorkingHours,setBranchWorkingHours]=useState(0);
   const [inputSummaryClassName, setSummaryClassName] =
     useState("input-grid hidden");
-  const months = [
+  const [selectButtonClassName,setSelectButtonClassName]=useState("btn")
+    const months = [
     "Ocak",
     "Şubat",
     "Mart",
@@ -80,6 +82,7 @@ const mesaiTypes={
   };
 
   const handleCalendarHidden = () => {
+
     setSummaryClassName("input-grid");
     setcalendarClassname("calendar-grid");
   };
@@ -87,6 +90,7 @@ const mesaiTypes={
     const updatedDays = [...calendarDays];
    if(mesaiType==mesaiTypes.normal){
     updatedDays[index].sabah=value;
+    
     
    }
    else if(mesaiType==mesaiTypes.gece){
@@ -108,6 +112,12 @@ const mesaiTypes={
     );
     setUsers(result.users);
   };
+
+  const redirectPage=(result)=>{
+  setSelectButtonClassName("btn hidden")
+    alert(`Bu döneme  [${result.name} / ${result.year}] kullanıcınıza puantaj girişi yapılmamış. Lütfen İSM admin ile görüşünüz `)
+  
+  }
 
   const handleUserModal = () => {
     setIsModalOpen(false);
@@ -132,10 +142,14 @@ const mesaiTypes={
    // setMonthlyWorkingDays(period.activeWorkingDaysInMonth);
   const {id}=decodeJwt(localStorage.getItem("accessToken"));
   const branchPuantajInfo = result.result[0].detail;
-  const secilen = branchPuantajInfo.find(item => item.id === id);
-  console.log(secilen)
-  setMonthlyWorkingDays(secilen.activeWorkingDaysInMonth)
-  setBranchWorkingHours(secilen.activeHours);
+  console.log(branchPuantajInfo)
+  const secilen =  branchPuantajInfo.find(item => item.id === id);
+  if(secilen==undefined){
+
+  redirectPage(result.result[0])
+  }
+  setMonthlyWorkingDays(secilen&&secilen.activeWorkingDaysInMonth)
+  setBranchWorkingHours(secilen&&secilen.activeHours);
      
   };
   const handleSubmit = async () => {
@@ -157,7 +171,8 @@ const mesaiTypes={
       geceCalisma: formData.geceCalisma,
       bayram: formData.bayram,
       esasOdeme: formData.esasOdeme,
-      admin:decodeJwt(localStorage.getItem("accessToken"))
+      admin:decodeJwt(localStorage.getItem("accessToken")),
+      mahsuplasmaValue:0
     };
 
     const result = await fetch(process.env.REACT_APP_WORKINGS_API_URL, {
@@ -229,7 +244,7 @@ const mesaiTypes={
             </option>
           ))}
         </select>
-        <button id="sec" className="btn" onClick={handleCalendarHidden}>
+        <button id="sec" className={selectButtonClassName} onClick={handleCalendarHidden}>
           Seç
         </button>
       <div style={{border: "1px solid red", padding: "10px", marginLeft: "10px", display: "inline-block"}}>

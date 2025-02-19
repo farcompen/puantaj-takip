@@ -329,6 +329,7 @@ margin-bottom: 5px;
   width:83vw;
   max-width: 83vw;
   
+  
   border-collapse: collapse;
 background-color:#fff ;
 box-shadow: 0 1px 3px rgba(0,0,0,0.2);
@@ -365,6 +366,10 @@ box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   gap: 2px;
 }
 
+.button-grid input {
+  width: 10vh;
+}
+
 
 
 .detail-table td{
@@ -385,6 +390,8 @@ box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 .input-group{
   font-size: smaller;
+
+  
 }
 .input-group select{
   font-size: smaller;

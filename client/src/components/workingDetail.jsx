@@ -21,7 +21,9 @@ const WorkingDetail = () => {
     dayHour: [],
     user: "",
   });
-
+const [trAlertClass,settralertclass]=useState({
+  backgroundColor:""
+});
   useEffect(() => {
     fetchPeriod();
   }, []);
@@ -78,6 +80,7 @@ const showWorking = async(id)=>{
   const result = await fetch(`${process.env.REACT_APP_BYWORKID}/${id}`)
                   .then(res=>res.json());
             if(result.status=="success"){
+              
               setSelectedWorking(result.work)
             }      
 
@@ -267,7 +270,7 @@ const showWorking = async(id)=>{
         <div className="card">
           
           <table
-           className="detail-table"
+           className="detail-table scrool"
           >
             <thead>
               <tr>
@@ -283,13 +286,15 @@ const showWorking = async(id)=>{
                 <th>Aktif Çalışma Süresi</th>
                 <th>Fiili Çalışma Süresi</th>
                 <th>Fazla Mesai</th>
+                <th>Mahsuplaşabilecek</th>
+                <th>Mahsuplaşan</th>
                 <th>Gece Çalışması</th>
                 <th>Bayram</th>
                 <th>Ödemeye esas fazla mesai</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr style={trAlertClass}>
                 <td>{working && working.user.identityNumber}</td>
                 <td>
                   {working && working.user.name}{" "}
@@ -301,10 +306,29 @@ const showWorking = async(id)=>{
                   ))}
                 <td>{working && working.activeWorkingTime}</td>
                 <td>{working && working.fiili}</td>
-                <td>{working && working.fazlaMesai}</td>
+                
+                 {working&&working.fazlaMesai>0?(
+                  <td style={{backgroundColor:'red'}}>{working.fazlaMesai}</td>
+              ):<td>{working.fazlaMesai}</td>}
+                
+                
+                                  <td>{working&&working.user.mahsuplasmaValue}</td>
+               
+               {
+               working&&working.mahsuplasmaValue>0?
+               (
+               <td style={{backgroundColor:'yellow'}}>{working&&working.mahsuplasmaValue}
+               </td>):
+               (<td>
+                0
+               </td>)
+
+              }
                 <td>{working && working.geceCalisma}</td>
                 <td>{working && working.bayram}</td>
-                <td>{working && working.esasOdeme}</td>
+                {working&&working.fazlaMesai>0?(
+                    <td style={{backgroundColor:'red'}}>{working.fazlaMesai}</td>
+                ):<td>{working.fazlaMesai}</td>}
               </tr>
 
               {/* <tr>{working.user.name} {working.user.surname}</tr>

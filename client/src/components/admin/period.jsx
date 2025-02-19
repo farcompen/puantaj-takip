@@ -1,7 +1,7 @@
 
 
 import { useEffect, useState } from "react";
-import { FaHome, FaListAlt, FaPlus, FaPlusCircle, FaPlusSquare, FaRegSave, FaSave } from "react-icons/fa";
+import { FaHome, FaListAlt, FaPlus, FaPlusCircle, FaPlusSquare, FaRegSave, FaSave, FaTrashAlt } from "react-icons/fa";
 const Period = () => {
   const date_ = new Date();
   const [period, setPeriod] = useState([]);
@@ -81,6 +81,26 @@ const Period = () => {
   
 
 
+  }
+
+  const updateValue = async(id)=>{
+
+    const result = await fetch(`${process.env.REACT_APP_PERIOD}/${id}`,{
+        method:'PATCH',
+        headers:new Headers({
+            "content-type":"application/json"
+        }),
+        body:JSON.stringify({
+            active:false
+        })
+
+    }).then(res=>res.json())
+
+    if(result.status==="success"){
+        fetchPeriod();
+    }
+
+    
   }
   const handleSubmit = async () => {
    
@@ -327,8 +347,8 @@ const Period = () => {
                       )}
                     </td>
                     <td>
-                      <button className="btn btn-submit">
-                        <FaListAlt /> Detay
+                      <button className="btn btn-red" onClick={()=>updateValue(data._id)}>
+                        <FaTrashAlt /> Sil
                       </button>
                     </td>
                   </tr>

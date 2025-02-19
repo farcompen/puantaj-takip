@@ -19,6 +19,7 @@ import AddLocationAdmin from "./components/admin/addLocationAdmin";
 import Location from "./components/admin/location";
 import Personel from "./components/admin/personel";
 import Period from "./components/admin/period";
+import Mahsuplasma from "./components/admin/mahsuplasma";
 function App() {
   return (
     <>
@@ -55,6 +56,14 @@ function App() {
                 <WorkingDetail />
               </ProtectedRoute>
             }
+          />
+          <Route 
+          path="/mahsuplas"
+          element={
+            <ProtectedRoute>
+              <Mahsuplasma/>
+            </ProtectedRoute>
+          }
           />
           <Route
             path="/adminworkings"
