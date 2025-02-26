@@ -45,7 +45,7 @@ const Login =()=>{
                 window.location.reload();
              }
              else if (role ==roles.tesisAdmin){
-                nav("/",{replace:true});
+                nav("/main",{replace:true});
                 window.location.reload();
              }  
             }

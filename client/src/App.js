@@ -20,6 +20,7 @@ import Location from "./components/admin/location";
 import Personel from "./components/admin/personel";
 import Period from "./components/admin/period";
 import Mahsuplasma from "./components/admin/mahsuplasma";
+import Dashboard from "./components/admin/dashboard";
 function App() {
   return (
     <>
@@ -111,6 +112,12 @@ function App() {
           }></Route>
         
           <Route path="/login" element={<Login />} />
+          <Route  path="/main" element={
+            <ProtectedRoute>
+              <Dashboard />
+
+            </ProtectedRoute>
+            }/>
         </Routes>
       </Router>
     </>
