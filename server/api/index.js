@@ -100,7 +100,7 @@ const fetchAdmins = async () => {
 
 const fetchLocationAdmins = async () => {
   const admins = await adminModel
-    .find({ role:process.env.ROLE })
+    .find({ role:process.env.ROLE,active:true })
     .select({  password: 0 })
     .populate("location")
     .exec();
@@ -115,6 +115,15 @@ const fetchAdminById=async(id)=>{
   const admin = await adminModel.findOne({_id:id}).select({username:0,password:0,active:0})
                 .populate("location")
   return admin;
+}
+
+const updateAdmin=async(id,value)=>{
+  const filter = {_id:id};
+  const updateResult = await adminModel.findOneAndUpdate(filter,value);
+  if(!updateResult){
+    throw new Error("Admin update ederken hata. Tekrar deneyiniz");
+  }
+  return updateResult;
 }
 //#endregion
 //#region User model and functions
@@ -150,7 +159,7 @@ const fetchUsers = async (adminId) => {
   return users;
 };
 
-const deleteUser=async(id,value)=>{
+const updateUser=async(id,value)=>{
   const filter = {_id:id}
   const result = await userModel.findOneAndUpdate(filter,value)
 }
@@ -192,9 +201,16 @@ const fetchLocation = async (id) => {
 };
 const fetchAllLocation = async()=>{
   console.log("locations get isteği geldi")
-  return await locationModel.find();
+  return await locationModel.find({active:true});
 }
-
+const updateLocation = async(id,value)=>{
+  const filter = {_id:id};
+  const result = await locationModel.findOneAndUpdate(filter,value);
+  if(!result){
+    throw new Error("Kurum silinirken hata oluştu.Tekrar deneyiniz");
+  }
+  return result;
+}
 //#endregion
 
 //#region periods model and functions
@@ -499,18 +515,19 @@ const fetchWorkingByWorkId = async (id) => {
   }
 };
 const fetchMahsuplasacakWorkingByUserId=async(adminId,periodId)=>{
+  console.log(adminId,periodId)
   const result = await workingModel.find({
     createdUser:adminId,
     period:periodId,
     active:true,
     localApprove:true,
     
-  }).where("fazlaMesai").gte(1).lte(720)
+  }).where("esasOdeme").gte(1).lte(720)
   .populate("user").exec();
   if(!result){
     throw new Error("Mahsuplaşma db error")
   }
-  console.log(result);
+  console.log("mahsuplacasak list",result);
 const mahsuplasmaList= result.filter((work)=>work.user.mahsuplasmaValue>0)
 console.log(mahsuplasmaList)
 if(!mahsuplasmaList){
@@ -529,10 +546,10 @@ const mahsuplas = async(workingId,demandedMahsuplasmaValue)=>{
   if(demandedMahsuplasmaValue>registeredMahsupValue){
     throw new Error(`Girilen mahsuplaşma değeri veritabanındaki kayıtlı değerden büyük olamaz. Personel Kayıtlı mahsuplaşma Değer: ${registeredMahsupValue}`)
   }
-  else if(demandedMahsuplasmaValue>working.fazlaMesai){
-    throw new Error("Girilen mahsuplaşma değeri fazla mesai değerinden büyük ")
+  else if(demandedMahsuplasmaValue>working.esasOdeme){
+    throw new Error("Girilen mahsuplaşma değeri esas ödeme değerinden büyük ")
   }
-  const fazlaMesaiNewValue = working.fazlaMesai-demandedMahsuplasmaValue;
+  const fazlaMesaiNewValue = working.esasOdeme-demandedMahsuplasmaValue;
   const lastMahsuplasanTotal= working.mahsuplasmaValue;
   const user = await userModel.findOne({_id:working.user._id});
   const usersCurrentMahsuplasmaValue = user.mahsuplasmaValue;
@@ -540,7 +557,7 @@ const mahsuplas = async(workingId,demandedMahsuplasmaValue)=>{
  console.log(updateUserMahsupValue)
   if(updateUserMahsuplasmaValue){
     console.log("user mahsuplasma alanı update edildi")
-  const workingResult = await workingModel.findOneAndUpdate({_id:workingId},{fazlaMesai:fazlaMesaiNewValue,esasOdeme:fazlaMesaiNewValue,mahsuplasmaValue:Number(lastMahsuplasanTotal)+Number(demandedMahsuplasmaValue)}) 
+  const workingResult = await workingModel.findOneAndUpdate({_id:workingId},{esasOdeme:fazlaMesaiNewValue,mahsuplasmaValue:Number(lastMahsuplasanTotal)+Number(demandedMahsuplasmaValue)}) 
 return workingResult;
  }
  else throw new Error("Kullanıcı mahsuplasma değeri güncellendi ama working bilgisi güncellenirlen hata")
@@ -633,6 +650,24 @@ app.get("/api/location",async(req,res)=>{
 
     })
   }
+})
+
+app.patch("/api/location/:id",async(req,res)=>{
+  try{
+    const locationId = req.params.id;
+    const value = req.body;
+    const updateResult = await updateLocation(locationId,value);
+    res.status(200).send({
+      status:"success"
+    })
+
+  }catch(err){
+    res.status(400).send({
+      status:"error",
+      message:err.message
+    })
+  }
+ 
 })
 
 app.post("/api/period", async (req, res) => {
@@ -938,7 +973,7 @@ app.patch("/api/user/:id",async(req,res)=>{
   try{
     const id = req.params.id;
     const value = req.body;
-    const result = await deleteUser(id,value);
+    const result = await updateUser(id,value);
     res.status(200).send({
       status:"success",
 
@@ -1051,6 +1086,26 @@ app.get("/api/admin/:id",async(req,res)=>{
       message:err.message
     })
   }
+})
+app.patch("/api/admin/:id",async(req,res)=>{
+try{
+  const adminId = req.params.id;
+  const value = req.body;
+  const result = await updateAdmin(adminId,value);
+  res.status(200).send({
+    status:"success"
+
+  })
+}
+catch(err){
+  res.status(400).send({
+    status:"error",
+    message:err.message
+  })
+}
+ 
+
+
 })
 app.post("/api/login", async (req, res) => {
   try {
