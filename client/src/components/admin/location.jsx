@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaHome,FaListAlt } from "react-icons/fa";
+import { FaHome,FaListAlt, FaTrashAlt } from "react-icons/fa";
 const Location = ()=>{
     const [formData,setFormdata]=useState({
         name:"",
@@ -22,6 +22,25 @@ const Location = ()=>{
     const handleFormData=(e)=>{
        const {name,value}=e.target;
         setFormdata((prev)=>({...prev,[name]:value}))
+
+    }
+    const deleteLocation = async(id)=>{
+        const result = await fetch(`${process.env.REACT_APP_LOCATIONS}/${id}`,{
+            method:'PATCH',
+            headers:new Headers({
+                "content-type":"application/json"
+            }),
+            body:JSON.stringify({
+                active:false
+            })
+        }).then(res=>res.json())
+        if(result.status==="success"){
+            alert("Kurum silindi");
+            await fetchLocations();
+        }
+        else {
+            alert(result.message);
+        }
 
     }
 
@@ -137,8 +156,9 @@ const Location = ()=>{
                               )}
                             </td>
                             <td>
-                              <button className="btn btn-submit">
-                                <FaListAlt /> Detay
+                              <button className="btn btn-red"
+                              onClick={()=>deleteLocation(data._id)}>
+                                <FaTrashAlt /> Sil
                               </button>
                             </td>
                           </tr>

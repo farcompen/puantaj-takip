@@ -1,8 +1,10 @@
 import { decodeJwt } from "../../utils/jwtDecoder";
 import { useState, useEffect } from "react";
-import { FaHome, FaTrashAlt } from "react-icons/fa";
+import { FaEdit, FaHome, FaTrashAlt,FaCheckCircle,FaWindowClose } from "react-icons/fa";
 const Personel = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [isModalOpen,setIsModalOpen]=useState(false);
+  const [selectedUserId,setselectedUserId]=useState("");
   const [formData, setFormData] = useState({
     identityNumber: "",
     name: "",
@@ -13,6 +15,9 @@ const Personel = () => {
     mahsuplasmaValue: 0,
     active: true,
   });
+  const [updateFOrmdata,setupdateFOrmdata]=useState({
+    mahsuplasma:formData.mahsuplasmaValue
+  })
   const [lcoations, setLocations] = useState([]);
   const [userList, setUserList] = useState([]);
   useEffect(() => {
@@ -66,6 +71,38 @@ const Personel = () => {
     );
     setUserList(result.users);
   };
+
+  const handleSelectedUser=(id)=>{
+    setselectedUserId(id);
+    setIsModalOpen(true);
+
+  }
+  const handleUpdateMahsuplasma=(e)=>{
+    const {name,value}=e.target;
+    setupdateFOrmdata((prev)=>({...prev,[name]:value}))
+
+  }
+  const updateUser=async()=>{
+    const userId = selectedUserId;
+    const result = await fetch(`${process.env.REACT_APP_PERSONEL}/${userId}`,{
+        method:'PATCH',
+        headers:new Headers({
+            "content-type":"application/json"
+        }),
+        body :JSON.stringify({
+            mahsuplasmaValue:updateFOrmdata.mahsuplasma
+        })
+    }).then(res=>res.json())
+    if(result.status==="success"){
+        await fetchUsers();
+        setIsModalOpen(false);
+    }
+    else {
+        alert(result.message)
+    }
+
+
+  }
   const handleSubmit = async () => {
     formData.location = selectedLocation;
     if (
@@ -96,6 +133,111 @@ const Personel = () => {
   return (
     <>
       <div>
+          <div className="modal-overlay" style={{ display: isModalOpen ? 'flex' : 'none' }}>
+            <div className="modal">
+              <div className="modal-header">
+             {`Personel Güncelle`}
+                
+              </div>
+              <div className="modal-content">
+              <div className="input-group">
+                <label>Mahsuplaşma Değeri</label>
+                <input type="number"
+                value={updateFOrmdata.mahsuplasmaValue}
+                name="mahsuplasma"
+                onChange={handleUpdateMahsuplasma} />
+                
+              </div>
+             
+              {/* <div style={{backgroundColor:'gainsboro', fontSize:'x-small', display: 'flex', alignItems:'center', gap: '8px', width:'25%' }}>
+                <label htmlFor="bbb-checkbox">Mahsuplaşma yapılsın</label>
+                <input type="checkbox" id="mahsuplasma-checkbox" onClick={()=>setCheckClassName("")} />
+                <div className={checkClassName}>
+                <label htmlFor="ccc-checkbox">Mahsuplaşacak saati giriniz</label>
+                <input   type="number"   id="mahsuplasilan" name="mahsuplasilan"
+                value={formdata.mahsuplasilan}
+                onChange={handleFormdata}
+                style={{borderTop:'6px',borderBlockColor:'blue',backgroundColor:'darkorange',fontSize:'x-small'}}/>
+                </div>
+                
+              </div> */}
+             
+              </div>
+              
+              
+              <div className="modal-footer">
+                <button className="btn btn-success" onClick={() => updateUser()}>Güncelle <FaCheckCircle/></button>
+                <button className="btn btn-red" onClick={() => setIsModalOpen(false)}>Kapat <FaWindowClose/></button>
+              </div>
+              <div>
+                
+              </div>
+            </div>
+            <style jsx>{`
+                .modal-overlay {
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  bottom: 0;
+                  background-color: rgba(0, 0, 0, 0.5);
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  z-index: 1000;
+                  overflow-x:scroll;
+                }
+        
+                .modal {
+                  background: white;
+                  border-radius: 8px;
+                  padding: 20px;
+                  width: 70%;
+                  height:70%;
+                   overflow-x:scroll;
+                  
+                }
+        
+                .modal-header {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 15px;
+                }
+        
+                .close-button {
+                  background: none;
+                  border: none;
+                  font-size: 24px;
+                  cursor: pointer;
+                  padding: 0;
+                  color: #666;
+                }
+        
+                .modal-content {
+                  margin-bottom: 20px;
+                }
+        
+                .modal-footer {
+                  display: flex;
+                  gap:2px;
+                  justify-content: flex-end;
+                }
+        
+                .modal-footer .button {
+                  padding: 8px 16px;
+                  background-color: #007bff;
+                  color: white;
+                  border: none;
+                  border-radius: 4px;
+                  cursor: pointer;
+                }
+        
+                .modal-footer .button:hover {
+                  background-color: #0056b3;
+                }
+              `}</style>
+          </div>
         <div className="card-header">
           <h2
             style={{
@@ -239,10 +381,17 @@ const Personel = () => {
                     </td>
                     <td>
                       <button
-                        className="error"
+                        className="btn btn-red"
                         onClick={() => deletePersonel(data._id)}
                       >
                         <FaTrashAlt /> Sil
+                      </button>
+                      <button
+                        className="btn btn-success"
+                        style={{marginLeft:"2px"}}
+                        onClick={() => handleSelectedUser(data._id)}
+                      >
+                        <FaEdit /> Düzenle
                       </button>
                     </td>
                   </tr>

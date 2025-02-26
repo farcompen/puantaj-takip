@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaHome, FaListAlt } from "react-icons/fa";
+import { FaHome, FaListAlt, FaTrashAlt } from "react-icons/fa";
 const AddLocationAdmin = () => {
   const [selectedLocation, setSelectedLocation] = useState("");
   const [formData, setFormData] = useState({
@@ -40,6 +40,26 @@ const AddLocationAdmin = () => {
     setSelectedLocation(e);
   };
 
+  const deleteUser=async(id)=>{
+    console.log("admin id is ",id);
+    const result = await fetch(`${process.env.REACT_APP_ADMIN_ADD}/${id}`,{
+        method:'PATCH',
+        headers:new Headers({
+            "content-type":"application/json"
+        }),
+        body:JSON.stringify({
+            active:false
+        })
+    }).then(res=>res.json())
+    if(result.status==="success"){
+        alert("Kullanıcı başarıyla silindi");
+        await fetchAdmins();
+    }
+    else {
+        alert(result.message)
+    }
+
+  }
   const fetchAdmins = async () => {
     const result = await fetch(process.env.REACT_APP_LOCATION_USERS).then(
       (res) => res.json()
@@ -237,8 +257,9 @@ const AddLocationAdmin = () => {
                       )}
                     </td>
                     <td>
-                      <button className="btn btn-submit">
-                        <FaListAlt /> Detay
+                      <button className="btn btn-red"
+                      onClick={()=>deleteUser(data._id)}>
+                        <FaTrashAlt /> Sil
                       </button>
                     </td>
                   </tr>

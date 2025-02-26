@@ -326,9 +326,9 @@ const showWorking = async(id)=>{
               }
                 <td>{working && working.geceCalisma}</td>
                 <td>{working && working.bayram}</td>
-                {working&&working.fazlaMesai>0?(
-                    <td style={{backgroundColor:'red'}}>{working.fazlaMesai}</td>
-                ):<td>{working.fazlaMesai}</td>}
+                {working&&working.esasOdeme>0?(
+                    <td style={{backgroundColor:'red'}}>{working.esasOdeme}</td>
+                ):<td>{working.esasOdeme}</td>}
               </tr>
 
               {/* <tr>{working.user.name} {working.user.surname}</tr>

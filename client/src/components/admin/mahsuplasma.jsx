@@ -217,9 +217,9 @@ const Mahsuplasma = ()=>{
                 <td>{working && working.geceCalisma}</td>
                 <td>{working && working.bayram}</td>
                 {
-                 working&&working.fazlaMesai>0?(
-                    <td style={{backgroundColor:'red'}}>{working.fazlaMesai}</td>
-                ):<td>{working.fazlaMesai}</td>}
+                 working&&working.esasOdeme>0?(
+                    <td style={{backgroundColor:'red'}}>{working.esasOdeme}</td>
+                ):<td>{working.esasOdeme}</td>}
                 
                   <td>
                     <div className="button-grid">
@@ -322,9 +322,9 @@ const Mahsuplasma = ()=>{
                 <td>{working && working.geceCalisma}</td>
                 <td>{working && working.bayram}</td>
                 {
-                 working&&working.fazlaMesai>0?(
-                    <td style={{backgroundColor:'red'}}>{working.fazlaMesai}</td>
-                ):<td>{working.fazlaMesai}</td>}
+                 working&&working.esasOdeme>0?(
+                    <td style={{backgroundColor:'red'}}>{working.esasOdeme}</td>
+                ):<td>{working.esasOdeme}</td>}
                 
                  
               </tr>

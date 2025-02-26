@@ -345,15 +345,11 @@ const WorkingsView = () => {
                               <td>{working.activeWorkingTime}</td>
                               <td>{working.fiili}</td>
                               <td>
-                                {working.fiili > working.activeWorkingTime
-                                  ? working.fiili - working.activeWorkingTime
-                                  : 0}
+                               {working.fazlaMesai}
                               </td>
                               <td>{working.aksam}</td>
                               <td>{working.bayram}</td>
-                              <td>{working.fiili > working.activeWorkingTime
-                                  ? working.fiili - working.activeWorkingTime
-                                  : 0}</td>
+                              <td>{working.esasOdeme}</td>
                               {
                                 // whole.map((d)=>(
                                 //   <td>{data[index].tcno}</td>

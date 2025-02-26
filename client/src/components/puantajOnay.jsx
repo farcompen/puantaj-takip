@@ -359,6 +359,9 @@ console.log(e);
                 <th>Gece Çalışması</th>
                 <th>Bayram</th>
                 <th>Ödemeye esas fazla mesai</th>
+                <th>Mahsuplaşan</th>
+                <th>Mahsuplaşacabilecek</th>
+
              <th></th>
              <th>Puantaj reddedildiyse</th>
               </tr>
@@ -380,10 +383,23 @@ console.log(e);
                 ):<td>{work.fazlaMesai}</td>}
                 <td>{work&& work.geceCalisma}</td>
                 <td>{work && work.bayram}</td>
-                { work&&work.fazlaMesai>0?(
-                    <td style={{backgroundColor:'red'}}>{work.fazlaMesai}</td>
-                ):<td>{work.fazlaMesai}</td>}
+                { work&&work.esasOdeme>0?(
+                    <td style={{backgroundColor:'red'}}>{work.esasOdeme}</td>
+                ):<td>{work.esasOdeme}</td>}
+                
+                {
+               work&&work.mahsuplasmaValue>0?
+               (
+               <td style={{backgroundColor:'yellow'}}>{work&&work.mahsuplasmaValue}
+               </td>):
+               (<td>
+                0
+               </td>)
+
+              }
+              <td>{work&&work.user.mahsuplasmaValue}</td>
                 <td>
+               
                     
                     <div className="button-grid" >
                       {

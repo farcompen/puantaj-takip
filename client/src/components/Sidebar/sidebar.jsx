@@ -5,9 +5,9 @@ const Sidebar = () => {
     <>
      <div className="sidebar">
       <a href="/createMonthlyWorks" className="sidebar-link"><FaPencilAlt/> Puantaj Girişi</a>
-      <a  href='/mahsuplas' className='sidebar-link'>< FaHandsHelping/> Mahsuplaşma</a>
+    
       <a href="/workingDetail" className="sidebar-link"><FaSearch/>  Puantaj Takip</a>
-   
+      <a  href='/mahsuplas' className='sidebar-link'>< FaHandsHelping/> Mahsuplaşma</a>
       <a href="/workingsView" className="sidebar-link"><FaClipboardList/> Puantaj Döküm</a>
      <a href ="/personel" className='sidebar-link'> <FaRegUser /> Personel İşlemleri</a>
      
