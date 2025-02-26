@@ -598,6 +598,26 @@ const verifyUserAndCreateToken = async (username, password) => {
   }
 };
 //#endregion
+
+//#region dashboard
+
+const getDashboardData=async(userId)=>{
+  const usersCount = await userModel.countDocuments({active:true});
+  const workingCount = await workingModel.countDocuments({active:true,createdUser:userId});
+  const notAdminApproved = await workingModel.countDocuments({active:true,createdUser:userId,localApprove:true,adminApprove:false});
+  const mahsuplasmaDone = await workingModel.countDocuments({active:true,createdUser:userId})
+                                  .where("mahsuplasmaValue").gte(1).lte(720).exec();
+  const dashboardValues = {
+    users:usersCount,
+    puantajTotal:workingCount,
+    onaylanmayan:notAdminApproved,
+    mahsuplasmaYapilan:mahsuplasmaDone
+  }     
+  
+  return dashboardValues;
+
+}
+//#endregion
 //#region  endpoints
 app.post("/api/user", async (req, res) => {
   try {
@@ -1106,6 +1126,28 @@ catch(err){
  
 
 
+})
+
+app.get("/api/dashboard/:id",async(req,res)=>{
+  try{
+    const userId = req.params.id;
+    const result = await getDashboardData(userId);
+    res.status(200).send({
+      status:"success",
+      result:result
+    })
+
+  }catch(err){
+    res.status(400).send({
+      status:"error",
+      result:{
+        users:0,
+        puantajTotal:0,
+        onaylanmayan:0,
+        mahsuplasmaYapilan:0
+      }
+    })
+  }
 })
 app.post("/api/login", async (req, res) => {
   try {
